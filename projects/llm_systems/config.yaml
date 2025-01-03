@@ -1,0 +1,182 @@
+# LLM System Configuration
+
+# Model Architecture
+model:
+  hidden_size: 768
+  num_layers: 12
+  num_attention_heads: 12
+  intermediate_size: 3072
+  hidden_act: "gelu"
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+  max_position_embeddings: 2048
+  type_vocab_size: 2
+  initializer_range: 0.02
+  layer_norm_eps: 1e-12
+  pad_token_id: 0
+  position_embedding_type: "rotary"  # [absolute, rotary, alibi]
+  use_cache: true
+
+# Attention Configuration
+attention:
+  type: "efficient"  # [efficient, flash, sparse]
+  window_size: 512
+  use_alibi: false
+  use_rope: true
+  attention_dropout: 0.1
+  head_dim: 64
+  num_key_value_heads: 12  # For grouped-query attention
+  use_sliding_window: true
+  sliding_window_size: 4096
+
+# Training Configuration
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 4
+  learning_rate: 1e-4
+  weight_decay: 0.01
+  warmup_steps: 10000
+  max_steps: 100000
+  fp16: true
+  bf16: false
+  gradient_checkpointing: true
+  gradient_clipping: 1.0
+  
+  optimizer:
+    name: "adamw"
+    beta1: 0.9
+    beta2: 0.999
+    eps: 1e-8
+    
+  scheduler:
+    name: "cosine"
+    num_cycles: 1
+    warmup_ratio: 0.1
+
+# Tokenizer Configuration
+tokenizer:
+  vocab_size: 50257
+  min_frequency: 2
+  special_tokens:
+    pad_token: "<|pad|>"
+    eos_token: "<|endoftext|>"
+    bos_token: "<|startoftext|>"
+    unk_token: "<|unknown|>"
+    mask_token: "<|mask|>"
+  lowercase: false
+  unicode_normalizer: "NFKC"
+
+# Data Configuration
+data:
+  train_file: "data/train.txt"
+  validation_file: "data/validation.txt"
+  test_file: "data/test.txt"
+  max_seq_length: 2048
+  preprocessing:
+    lowercase: false
+    remove_punctuation: false
+    strip_accents: false
+  augmentation:
+    enabled: true
+    techniques:
+      - name: "random_mask"
+        probability: 0.15
+      - name: "token_deletion"
+        probability: 0.1
+      - name: "token_replacement"
+        probability: 0.1
+
+# Distributed Training
+distributed:
+  backend: "nccl"
+  world_size: 8
+  find_unused_parameters: false
+  gradient_as_bucket_view: true
+  broadcast_buffers: false
+  static_graph: true
+
+# Hardware Configuration
+hardware:
+  precision: "fp16"
+  device: "cuda"
+  num_gpus: 8
+  num_workers: 4
+  pin_memory: true
+  cudnn_benchmark: true
+  cudnn_deterministic: false
+  use_flash_attention: true
+  memory_efficient_attention: true
+
+# Logging and Checkpointing
+logging:
+  project_name: "llm_training"
+  run_name: null  # Set at runtime
+  log_frequency: 100
+  eval_frequency: 1000
+  save_frequency: 5000
+  
+  wandb:
+    enabled: true
+    project: "llm_research"
+    entity: "research_team"
+    tags: ["transformer", "efficient-attention"]
+    
+  tensorboard:
+    enabled: true
+    log_dir: "runs"
+
+checkpointing:
+  save_dir: "checkpoints"
+  save_total_limit: 5
+  save_best_only: true
+  metric_for_best: "loss"
+  greater_is_better: false
+
+# Evaluation
+evaluation:
+  metrics:
+    - "perplexity"
+    - "accuracy"
+    - "loss"
+  generate_samples: true
+  num_samples: 10
+  max_length: 100
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+
+# Inference
+inference:
+  batch_size: 32
+  num_beams: 4
+  max_length: 100
+  min_length: 10
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+  repetition_penalty: 1.2
+  length_penalty: 1.0
+  no_repeat_ngram_size: 3
+  use_cache: true
+
+# Development Tools
+development:
+  debug: false
+  profile: false
+  seed: 42
+  deterministic: false
+  benchmark: true
+  compile: true  # Use torch.compile
+  optimization_level: "O2"  # For torch.compile
+  
+  profiler:
+    enabled: false
+    wait: 1
+    warmup: 1
+    active: 3
+    repeat: 2
+    
+  testing:
+    unit_test_dir: "tests/unit"
+    integration_test_dir: "tests/integration"
+    benchmark_dir: "tests/benchmarks" 
