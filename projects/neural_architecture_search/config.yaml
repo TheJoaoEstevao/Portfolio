@@ -1,0 +1,100 @@
+version: 1.0.0
+
+# Search Space Configuration
+search_space:
+  operations:
+    basic:
+      - conv3x3
+      - conv1x1
+      - maxpool
+      - avgpool
+    advanced:
+      - separable_conv
+      - dilated_conv
+      - squeeze_excite
+    experimental:
+      - dynamic_conv
+      - lambda_layer
+      - attention_block
+  
+  architecture_constraints:
+    min_layers: 1
+    max_layers: 20
+    min_channels: 16
+    max_channels: 512
+    allow_skip_connections: true
+    skip_connection_density: 0.5
+
+# Evolution Parameters
+evolution:
+  population_size: 100
+  n_generations: 50
+  mutation_rate: 0.1
+  crossover_rate: 0.2
+  selection:
+    method: tournament
+    tournament_size: 5
+  survival:
+    method: elitism
+    elite_percentage: 0.1
+
+# Training Configuration
+training:
+  batch_size: 64
+  learning_rate: 0.001
+  optimizer:
+    name: adam
+    betas: [0.9, 0.999]
+    weight_decay: 0.0001
+  scheduler:
+    name: cosine
+    warmup_epochs: 5
+    cycles: 1
+  mixed_precision: true
+  gradient_clipping: 1.0
+
+# Hardware Configuration
+hardware:
+  devices:
+    - cuda:0
+    - cuda:1
+  precision: float16
+  distributed:
+    backend: nccl
+    sync_bn: true
+    find_unused_parameters: false
+
+# Logging and Checkpointing
+logging:
+  wandb:
+    project: nas_search
+    tags: [research, evolutionary]
+  tensorboard: true
+  log_frequency: 100
+  save_frequency: 1000
+
+checkpointing:
+  save_dir: checkpoints
+  max_to_keep: 5
+  save_best_only: true
+  metric: accuracy
+
+# Extensibility Hooks
+hooks:
+  pre_training: null
+  post_training: null
+  pre_mutation: null
+  post_mutation: null
+  custom_metrics: null
+
+# Future Extensions
+planned_features:
+  - name: multi_objective_optimization
+    priority: high
+    status: planned
+  - name: neural_predictor
+    priority: medium
+    status: development
+  - name: dynamic_resolution
+    priority: low
+    status: research 
